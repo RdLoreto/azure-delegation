@@ -1,47 +1,40 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.36.1.42791",
-      "templateHash": "10322695427098169047"
-    }
-  },
   "parameters": {
     "managedByTenantId": {
       "type": "string",
       "defaultValue": "f988766b-1dc1-4db1-973e-611897dbf32a",
       "metadata": {
-        "description": "Tenant ID da empresa SaaS (onde a aplicação está registrada)"
+        "description": "Your SaaS Tenant ID (where the app is registered)"
       }
     },
     "principalId": {
       "type": "string",
       "defaultValue": "706b128a-346d-47d1-bfd5-bc9513440f6d",
       "metadata": {
-        "description": "Object ID da aplicação que receberá o acesso"
+        "description": "Object ID of your SaaS app"
       }
     },
     "principalDisplayName": {
       "type": "string",
       "defaultValue": "SaaS Cloud Cost App",
       "metadata": {
-        "description": "Nome da aplicação exibido para o cliente"
+        "description": "Display name shown to the customer"
       }
     },
     "offerName": {
       "type": "string",
-      "defaultValue": "Delegação de Custos para SaaS",
+      "defaultValue": "Cloud Cost Analysis Delegation",
       "metadata": {
-        "description": "Nome amigável da delegação"
+        "description": "Friendly name of the delegated offer"
       }
     },
     "offerDescription": {
       "type": "string",
-      "defaultValue": "Concede acesso Billing Reader à aplicação SaaS para análise de custos.",
+      "defaultValue": "Grants Billing Reader access to our SaaS app for analyzing Azure cost data.",
       "metadata": {
-        "description": "Descrição da delegação"
+        "description": "Description shown to the customer"
       }
     }
   },
@@ -58,7 +51,7 @@
           {
             "principalId": "[parameters('principalId')]",
             "principalIdDisplayName": "[parameters('principalDisplayName')]",
-            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
+            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Billing Reader
           }
         ]
       }
