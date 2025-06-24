@@ -1,15 +1,48 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Delegar acesso à aplicação SaaS</title>
-  </head>
-  <body>
-    <h2>Delegar acesso Billing Reader à PocBillingReader</h2>
-    <p>Clique no botão abaixo para autorizar a aplicação SaaS a acessar seus dados de cobrança.</p>
-
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FRdLoreto%2Fazure-delegation%2Fmain%2Fdelegation.json" target="_blank">
-      <img src="https://aka.ms/deploytoazurebutton" alt="Deploy to Azure" />
-    </a>
-  </body>
+<html>
+<head>
+    <title>Azure Billing Reader POC</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; }
+        .card { padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            background: #0078d4; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            margin-top: 20px;
+        }
+        .warning { color: #d83b01; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Azure Billing Reader POC</h1>
+        <p>This proof of concept demonstrates how to grant <strong>Billing Reader</strong> access to our SaaS application.</p>
+        
+        <div class="warning">
+            <p>⚠️ THIS IS A PROOF OF CONCEPT ONLY ⚠️</p>
+            <p>For demonstration purposes with limited permissions.</p>
+        </div>
+        
+        <h3>What will be granted:</h3>
+        <ul>
+            <li>Application: <strong>PocBillingReader</strong></li>
+            <li>Permission: <strong>Billing Reader</strong> (read-only)</li>
+            <li>Granted to: <strong>Microsoft Tenant ID: d9106a5f-485c-4821-b34e-a4b19f02a841</strong></li>
+        </ul>
+        
+        <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPO/billing-poc.json" 
+           target="_blank" 
+           class="btn">
+            Grant Billing Access (One-Click)
+        </a>
+        
+        <h3>Technical Details</h3>
+        <pre>Service Principal: 7f8640be-2c3d-4826-b99a-5ac880b11d77
+Client ID: be316639-ba4e-4d14-b856-44010cfd84e4</pre>
+    </div>
+</body>
 </html>
