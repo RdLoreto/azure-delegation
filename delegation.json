@@ -1,20 +1,56 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {},
+  "parameters": {
+    "managedByTenantId": {
+      "type": "string",
+      "defaultValue": "d9106a5f-485c-4821-b34e-a4b19f02a841",
+      "metadata": {
+        "description": "Tenant ID da aplicação SaaS que será delegada"
+      }
+    },
+    "principalId": {
+      "type": "string",
+      "defaultValue": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
+      "metadata": {
+        "description": "Object ID da aplicação PocBillingReader"
+      }
+    },
+    "principalDisplayName": {
+      "type": "string",
+      "defaultValue": "PocBillingReader",
+      "metadata": {
+        "description": "Nome da aplicação exibido ao cliente"
+      }
+    },
+    "offerName": {
+      "type": "string",
+      "defaultValue": "Delegação de Custos SaaS - PocBillingReader",
+      "metadata": {
+        "description": "Nome amigável da delegação"
+      }
+    },
+    "offerDescription": {
+      "type": "string",
+      "defaultValue": "Concede à aplicação SaaS PocBillingReader acesso somente leitura aos dados de custos do Azure (Billing Reader). Nenhum recurso será criado na sua subscription.",
+      "metadata": {
+        "description": "Descrição da delegação"
+      }
+    }
+  },
   "resources": [
     {
       "type": "Microsoft.ManagedServices/registrationDefinitions",
       "apiVersion": "2019-09-01",
-      "name": "poc-billingreader-delegation",
+      "name": "[guid(parameters('offerName'))]",
       "properties": {
-        "registrationDefinitionName": "Delegação de Custos - PocBillingReader",
-        "description": "Concede acesso Billing Reader à aplicação PocBillingReader para análise de custos em sua subscription.",
-        "managedByTenantId": "d9106a5f-485c-4821-b34e-a4b19f02a841",
+        "registrationDefinitionName": "[parameters('offerName')]",
+        "description": "[parameters('offerDescription')]",
+        "managedByTenantId": "[parameters('managedByTenantId')]",
         "authorizations": [
           {
-            "principalId": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
-            "principalIdDisplayName": "PocBillingReader",
+            "principalId": "[parameters('principalId')]",
+            "principalIdDisplayName": "[parameters('principalDisplayName')]",
             "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
           }
         ]
