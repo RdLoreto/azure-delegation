@@ -1,118 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Azure Billing Reader POC</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; }
-        .card { padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-        .btn { 
-            display: inline-block; 
-            padding: 10px 20px; 
-            background: #0078d4; 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 4px; 
-            margin: 10px 5px;
-        }
-        .btn-test { background: #107c10; }
-        .warning { color: #d83b01; font-weight: bold; }
-        #result { margin-top: 20px; padding: 10px; border-radius: 4px; }
-        .success { background: #dff6dd; color: #107c10; }
-        .error { background: #fde7e9; color: #a80000; }
-    </style>
+  <title>Connect Azure Billing</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; }
+    .btn { 
+      display: inline-block; padding: 12px 24px; background: #0078d4; 
+      color: white; text-decoration: none; border-radius: 4px; 
+    }
+  </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Azure Billing Reader POC</h1>
-        <p>This proof of concept demonstrates how to grant and verify <strong>Billing Reader</strong> access.</p>
-        
-        <div class="warning">
-            <p>⚠️ THIS IS A PROOF OF CONCEPT ONLY ⚠️</p>
-        </div>
-        
-        <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPO/billing-poc.json" 
-           target="_blank" 
-           class="btn">
-            Grant Billing Access (One-Click)
-        </a>
-        
-        <button id="checkAccessBtn" class="btn btn-test">Check My Access</button>
-        
-        <div id="result" style="display: none;"></div>
-        
-        <h3>How this works:</h3>
-        <ol>
-            <li>Click <strong>Grant Billing Access</strong> to delegate permissions via Azure Lighthouse</li>
-            <li>After granting access, click <strong>Check My Access</strong></li>
-            <li>The page will call Azure's Consumption API to verify permissions</li>
-        </ol>
-    </div>
+  <h2>Connect Your Azure Subscription</h2>
+  <p>To enable billing insights, grant <strong>read-only</strong> access:</p>
+  
+  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPO/billing-access.json" 
+     class="btn">
+    Grant Billing Access (1-Click)
+  </a>
 
-    <script>
-        document.getElementById('checkAccessBtn').addEventListener('click', async () => {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.textContent = "Checking access...";
-            
-            try {
-                // Get an Azure token (requires user login)
-                const token = await getAzureToken();
-                
-                // Replace with your actual subscription ID
-                const subscriptionId = prompt("Enter your Azure Subscription ID:");
-                if (!subscriptionId) return;
-                
-                // Test Billing API access
-                const hasAccess = await checkBillingAccess(token, subscriptionId);
-                
-                if (hasAccess) {
-                    resultDiv.className = 'success';
-                    resultDiv.innerHTML = "✅ <strong>Access confirmed!</strong><br>Your service principal has Billing Reader permissions.";
-                } else {
-                    resultDiv.className = 'error';
-                    resultDiv.innerHTML = "❌ <strong>No access found.</strong><br>Ensure you've granted permissions via the 'Grant Billing Access' button.";
-                }
-            } catch (error) {
-                resultDiv.className = 'error';
-                resultDiv.innerHTML = `❌ <strong>Error:</strong> ${error.message}<br>Are you logged into Azure?`;
-            }
-        });
-
-        async function getAzureToken() {
-            // Uses MSAL.js for browser-based auth
-            const msalConfig = {
-                auth: {
-                    clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // Your app ID
-                    authority: "https://login.microsoftonline.com/common"
-                }
-            };
-            
-            const msalInstance = new msal.PublicClientApplication(msalConfig);
-            const response = await msalInstance.acquireTokenSilent({
-                scopes: ["https://management.azure.com/.default"]
-            }).catch(async () => {
-                return await msalInstance.acquireTokenPopup({
-                    scopes: ["https://management.azure.com/.default"]
-                });
-            });
-            
-            return response.accessToken;
-        }
-
-        async function checkBillingAccess(token, subscriptionId) {
-            const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Consumption/usageDetails?api-version=2023-03-01&$top=1`;
-            
-            const response = await fetch(url, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-            
-            return response.ok; // Returns true if HTTP 200
-        }
-    </script>
-    
-    <!-- MSAL.js for authentication -->
-    <script src="https://alcdn.msauth.net/browser/2.24.0/js/msal-browser.min.js"></script>
+  <h3>What happens next?</h3>
+  <ol>
+    <li>You'll be redirected to Azure Portal</li>
+    <li>Review the permissions (Billing Reader only)</li>
+    <li>Click <strong>Deploy</strong> to approve</li>
+  </ol>
 </body>
 </html>
