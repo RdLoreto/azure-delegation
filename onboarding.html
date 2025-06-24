@@ -1,14 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Delegar acesso à PocBillingReader</title>
+  <title>Check Billing Reader Access</title>
+  <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 </head>
-<body style="font-family:sans-serif;text-align:center;margin-top:80px;">
-  <h2>Delegar acesso de leitura de custos à aplicação PocBillingReader</h2>
-  <p>Este botão abrirá o portal Azure para que você delegue acesso Billing Reader à nossa aplicação.</p>
-  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FRdLoreto%2Fazure-delegation%2Frefs%2Fheads%2Fmain%2Fdelegation.json" target="_blank">
-    <img src="https://aka.ms/deploytoazurebutton" alt="Deploy to Azure">
-  </a>
+<body>
+  <h2>Verificar Permissão Billing Reader</h2>
+  <button onclick="signIn()">Entrar com Azure</button>
+  <pre id="result">...</pre>
+
+  <script>
+    const msalConfig = {
+      auth: {
+        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4",
+        authority: "https://login.microsoftonline.com/common",
+        redirectUri: window.location.href
+      }
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    async function signIn() {
+      try {
+        const loginResponse = await msalInstance.loginPopup({
+          scopes: ["https://management.azure.com/user_impersonation"]
+        });
+
+        const tokenResponse = await msalInstance.acquireTokenSilent({
+          account: loginResponse.account,
+          scopes: ["https://management.azure.com/user_impersonation"]
+        });
+
+        const accessToken = tokenResponse.accessToken;
+        document.getElementById("result").textContent = "Token obtido. Listando subscriptions...";
+
+        const subs = await fetch("https://management.azure.com/subscriptions?api-version=2020-01-01", {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }).then(res => res.json());
+
+        const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64";
+        const principalId = "7f8640be-2c3d-4826-b99a-5ac880b11d77";
+
+        let results = [];
+
+        for (const sub of subs.value) {
+          const subId = sub.subscriptionId;
+          const roles = await fetch(`https://management.azure.com/subscriptions/${subId}/providers/Microsoft.Authorization/roleAssignments?api-version=2020-10-01`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          }).then(res => res.json());
+
+          const hasAccess = roles.value.some(assignment =>
+            assignment.properties.roleDefinitionId.includes(billingReaderRoleId) &&
+            assignment.properties.principalId === principalId
+          );
+
+          results.push(`${sub.displayName} (${subId}): ${hasAccess ? "✅ TEM acesso" : "❌ NÃO tem acesso"}`);
+        }
+
+        document.getElementById("result").textContent = results.join("\n");
+      } catch (err) {
+        console.error(err);
+        document.getElementById("result").textContent = "Erro: " + err.message;
+      }
+    }
+  </script>
 </body>
 </html>
