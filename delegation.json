@@ -1,57 +1,21 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {
-    "managedByTenantId": {
-      "type": "string",
-      "defaultValue": "f988766b-1dc1-4db1-973e-611897dbf32a",
-      "metadata": {
-        "description": "Your SaaS Tenant ID (where the app is registered)"
-      }
-    },
-    "principalId": {
-      "type": "string",
-      "defaultValue": "706b128a-346d-47d1-bfd5-bc9513440f6d",
-      "metadata": {
-        "description": "Object ID of your SaaS app"
-      }
-    },
-    "principalDisplayName": {
-      "type": "string",
-      "defaultValue": "SaaS Cloud Cost App",
-      "metadata": {
-        "description": "Display name shown to the customer"
-      }
-    },
-    "offerName": {
-      "type": "string",
-      "defaultValue": "Cloud Cost Analysis Delegation",
-      "metadata": {
-        "description": "Friendly name of the delegated offer"
-      }
-    },
-    "offerDescription": {
-      "type": "string",
-      "defaultValue": "Grants Billing Reader access to our SaaS app for analyzing Azure cost data.",
-      "metadata": {
-        "description": "Description shown to the customer"
-      }
-    }
-  },
+  "parameters": {},
   "resources": [
     {
       "type": "Microsoft.ManagedServices/registrationDefinitions",
       "apiVersion": "2019-09-01",
-      "name": "[guid(parameters('offerName'))]",
+      "name": "poc-billingreader-delegation",
       "properties": {
-        "registrationDefinitionName": "[parameters('offerName')]",
-        "description": "[parameters('offerDescription')]",
-        "managedByTenantId": "[parameters('managedByTenantId')]",
+        "registrationDefinitionName": "Delegação de Custos - PocBillingReader",
+        "description": "Concede acesso Billing Reader à aplicação PocBillingReader para análise de custos em sua subscription.",
+        "managedByTenantId": "d9106a5f-485c-4821-b34e-a4b19f02a841",
         "authorizations": [
           {
-            "principalId": "[parameters('principalId')]",
-            "principalIdDisplayName": "[parameters('principalDisplayName')]",
-            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Billing Reader
+            "principalId": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
+            "principalIdDisplayName": "PocBillingReader",
+            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
           }
         ]
       }
