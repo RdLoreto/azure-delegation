@@ -6,33 +6,33 @@
       "type": "string",
       "defaultValue": "d9106a5f-485c-4821-b34e-a4b19f02a841",
       "metadata": {
-        "description": "Tenant ID da aplicação SaaS"
+        "description": "Tenant ID da aplicação SaaS (onde está registrada)"
       }
     },
     "principalId": {
       "type": "string",
       "defaultValue": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
       "metadata": {
-        "description": "Object ID da aplicação PocBillingReader"
+        "description": "Object ID da aplicação que receberá o acesso"
       }
     },
     "principalDisplayName": {
       "type": "string",
       "defaultValue": "PocBillingReader",
       "metadata": {
-        "description": "Nome da aplicação"
+        "description": "Nome exibido da aplicação para o cliente"
       }
     },
     "offerName": {
       "type": "string",
-      "defaultValue": "Delegação de Custos SaaS - PocBillingReader",
+      "defaultValue": "poc-billingreader-delegation",
       "metadata": {
         "description": "Nome amigável da delegação"
       }
     },
     "offerDescription": {
       "type": "string",
-      "defaultValue": "Concede à aplicação SaaS PocBillingReader acesso somente leitura aos dados de custos do Azure.",
+      "defaultValue": "Concede acesso Billing Reader à aplicação SaaS para análise de custos.",
       "metadata": {
         "description": "Descrição da delegação"
       }
@@ -51,7 +51,7 @@
           {
             "principalId": "[parameters('principalId')]",
             "principalIdDisplayName": "[parameters('principalDisplayName')]",
-            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
+            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"  // Billing Reader
           }
         ]
       }
