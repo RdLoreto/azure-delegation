@@ -4,8 +4,8 @@
   "resources": [
     {
       "type": "Microsoft.ManagedServices/registrationDefinitions",
-      "apiVersion": "2022-10-01",  // Updated to stable API version
-      "name": "billing-reader-delegation",
+      "apiVersion": "2022-10-01",
+      "name": "[guid('billing-reader-delegation')]",  // Now generates a valid GUID
       "properties": {
         "registrationDefinitionName": "Billing Reader Access for SaaS POC",
         "description": "Grants read-only billing access to PocBillingReader service principal",
@@ -17,7 +17,7 @@
             "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
           }
         ],
-        "eligibleAuthorizations": []  // Required in newer API versions
+        "eligibleAuthorizations": []
       }
     }
   ]
