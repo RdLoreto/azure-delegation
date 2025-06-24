@@ -4,38 +4,23 @@
   "parameters": {
     "managedByTenantId": {
       "type": "string",
-      "defaultValue": "d9106a5f-485c-4821-b34e-a4b19f02a841",
-      "metadata": {
-        "description": "Tenant ID da empresa SaaS (onde a aplicação está registrada)"
-      }
+      "defaultValue": "d9106a5f-485c-4821-b34e-a4b19f02a841"
     },
     "principalId": {
       "type": "string",
-      "defaultValue": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
-      "metadata": {
-        "description": "Object ID da aplicação que receberá o acesso"
-      }
+      "defaultValue": "7f8640be-2c3d-4826-b99a-5ac880b11d77"
     },
     "principalDisplayName": {
       "type": "string",
-      "defaultValue": "PocBillingReader",
-      "metadata": {
-        "description": "Nome da aplicação exibido para o cliente"
-      }
+      "defaultValue": "PocBillingReader"
     },
     "offerName": {
       "type": "string",
-      "defaultValue": "Billing Reader Delegation",
-      "metadata": {
-        "description": "Nome amigável da delegação"
-      }
+      "defaultValue": "PocBillingReaderDelegation"
     },
     "offerDescription": {
       "type": "string",
-      "defaultValue": "Concede acesso Billing Reader à aplicação PocBillingReader.",
-      "metadata": {
-        "description": "Descrição da delegação"
-      }
+      "defaultValue": "Concede acesso Billing Reader à aplicação SaaS PocBillingReader."
     }
   },
   "resources": [
@@ -51,7 +36,7 @@
           {
             "principalId": "[parameters('principalId')]",
             "principalIdDisplayName": "[parameters('principalDisplayName')]",
-            "roleDefinitionId": "/providers/Microsoft.Authorization/roleDefinitions/fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
+            "roleDefinitionId": "/providers/Microsoft.Authorization/roleDefinitions/fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" 
           }
         ]
       }
