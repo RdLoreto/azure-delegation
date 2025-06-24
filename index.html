@@ -1,131 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verificar Permissão Billing Reader</title>
-  <script src="https://alcdn.msauth.net/browser/2.34.0/js/msal-browser.min.js"></script>
-</head>
-<body>
-  <h1>Verificar Permissão Billing Reader</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Delegar acesso à aplicação SaaS</title>
+  </head>
+  <body>
+    <h2>Delegar acesso Billing Reader à PocBillingReader</h2>
+    <p>Clique no botão abaixo para autorizar a aplicação SaaS a acessar seus dados de cobrança.</p>
 
-  <label for="subscriptionId">ID da Assinatura do Cliente:</label>
-  <input type="text" id="subscriptionId" placeholder="Digite o ID da assinatura" style="width:300px" />
-  <br /><br />
-
-  <button id="loginBtn">Login e Verificar Acesso</button>
-  <button id="adminConsentBtn" style="display:none;">Solicitar Consentimento do Administrador</button>
-
-  <pre id="result" style="margin-top:20px; white-space: pre-wrap;"></pre>
-
-  <script>
-    const msalConfig = {
-      auth: {
-        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // Seu clientId SaaS
-        redirectUri: window.location.origin,
-        authority: "https://login.microsoftonline.com/common", // multi-tenant
-      },
-    };
-
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-    const loginBtn = document.getElementById("loginBtn");
-    const adminConsentBtn = document.getElementById("adminConsentBtn");
-    const resultDiv = document.getElementById("result");
-
-    const scopes = ["https://management.azure.com/user_impersonation"];
-
-    let currentTenantId = null;
-
-    loginBtn.onclick = async () => {
-      const subscriptionId = document.getElementById("subscriptionId").value.trim();
-      if (!subscriptionId) {
-        alert("Por favor, digite o ID da assinatura.");
-        return;
-      }
-
-      resultDiv.textContent = "Tentando login...";
-
-      try {
-        // Login popup para obter conta
-        const loginResponse = await msalInstance.loginPopup({ scopes });
-        const account = loginResponse.account;
-        msalInstance.setActiveAccount(account);
-
-        // Capturar tenant do usuário logado para link admin consent
-        currentTenantId = loginResponse.tenantId || "common";
-
-        // Adquirir token silenciosamente
-        const tokenResponse = await msalInstance.acquireTokenSilent({
-          scopes,
-          account,
-        }).catch(async (error) => {
-          if (error instanceof msal.InteractionRequiredAuthError) {
-            return msalInstance.acquireTokenPopup({ scopes, account });
-          } else {
-            throw error;
-          }
-        });
-
-        const accessToken = tokenResponse.accessToken;
-
-        // ID do role Billing Reader
-        const billingReaderRoleDefinitionId = "b24988ac-6180-42a0-ab88-20f7382dd24c";
-
-        // Obter role assignments na subscription
-        const roleAssignmentsResponse = await fetch(
-          `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!roleAssignmentsResponse.ok) {
-          if (roleAssignmentsResponse.status === 403) {
-            // Acesso negado: provavelmente falta permissão no tenant
-            throw new Error("Acesso negado à API. Você pode precisar que o administrador conceda permissão.");
-          }
-          throw new Error(`Erro na API: ${roleAssignmentsResponse.status} ${roleAssignmentsResponse.statusText}`);
-        }
-
-        const roleAssignmentsJson = await roleAssignmentsResponse.json();
-
-        // Verifica se o usuário tem role billing reader
-        const principalId = account.homeAccountId.split('.')[0].toLowerCase();
-
-        const hasBillingReader = roleAssignmentsJson.value.some((ra) =>
-          ra.properties.roleDefinitionId.toLowerCase().endsWith(billingReaderRoleDefinitionId) &&
-          ra.properties.principalId.toLowerCase() === principalId
-        );
-
-        if (hasBillingReader) {
-          resultDiv.textContent = `Você TEM acesso Billing Reader na assinatura ${subscriptionId}`;
-          adminConsentBtn.style.display = "none";
-        } else {
-          resultDiv.textContent = `Você NÃO TEM acesso Billing Reader na assinatura ${subscriptionId}`;
-          adminConsentBtn.style.display = "none";
-        }
-
-      } catch (e) {
-        resultDiv.textContent = "Erro: " + e.message;
-
-        if (e.message.includes("consent") || e.message.includes("Acesso negado")) {
-          adminConsentBtn.style.display = "inline-block";
-        }
-      }
-    };
-
-    adminConsentBtn.onclick = () => {
-      if (!currentTenantId) {
-        alert("Por favor, faça login primeiro.");
-        return;
-      }
-      // Link para consentimento do admin
-      const url = `https://login.microsoftonline.com/${currentTenantId}/adminconsent?client_id=${msalConfig.auth.clientId}&redirect_uri=${encodeURIComponent(window.location.origin)}`;
-      window.open(url, "_blank");
-    };
-  </script>
-</body>
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FRdLoreto%2Fazure-delegation%2Fmain%2Fdelegation.json" target="_blank">
+      <img src="https://aka.ms/deploytoazurebutton" alt="Deploy to Azure" />
+    </a>
+  </body>
 </html>
