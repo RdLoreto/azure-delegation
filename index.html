@@ -1,88 +1,102 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Onboarding Delegação Billing Azure</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      max-width: 600px;
-    }
-    input {
-      font-size: 1rem;
-      padding: 0.4rem;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    button {
-      font-size: 1rem;
-      padding: 0.6rem 1.2rem;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-    #status {
-      margin-top: 1rem;
-      background: #f3f3f3;
-      padding: 1rem;
-      border-radius: 4px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Check Billing Reader Access</title>
+  <script src="https://alcdn.msauth.net/browser/2.34.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Delegação de acesso Billing Azure</h1>
-  <p>Informe seu <strong>Subscription ID</strong> para iniciar a delegação:</p>
-  <input
-    type="text"
-    id="subscriptionId"
-    placeholder="Ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    autocomplete="off"
-    spellcheck="false"
-  />
-  <button id="btnDelegate" disabled>Delegar acesso (Billing Reader)</button>
+  <h1>Check Billing Reader Permission</h1>
 
-  <div id="status" aria-live="polite"></div>
+  <label for="subscriptionId">Client Subscription ID:</label>
+  <input type="text" id="subscriptionId" placeholder="Enter subscription ID" style="width:300px" />
+  <br /><br />
+
+  <button id="loginBtn">Login and Check Access</button>
+
+  <pre id="result" style="margin-top:20px; white-space: pre-wrap;"></pre>
 
   <script>
-    const btn = document.getElementById('btnDelegate');
-    const input = document.getElementById('subscriptionId');
-    const status = document.getElementById('status');
+    const msalConfig = {
+      auth: {
+        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // Your SaaS app client ID
+        redirectUri: window.location.origin,
+        authority: "https://login.microsoftonline.com/common", // multi-tenant
+      },
+    };
 
-    // Valida se é um GUID simples (não perfeito, mas suficiente)
-    function isValidGuid(guid) {
-      return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(guid);
-    }
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const loginBtn = document.getElementById("loginBtn");
+    const resultDiv = document.getElementById("result");
 
-    input.addEventListener('input', () => {
-      const val = input.value.trim();
-      btn.disabled = !isValidGuid(val);
-      status.textContent = '';
-    });
+    const scopes = ["https://management.azure.com/user_impersonation"];
 
-    btn.onclick = () => {
-      const subId = input.value.trim();
-      if (!isValidGuid(subId)) {
-        status.textContent = 'Subscription ID inválido.';
+    loginBtn.onclick = async () => {
+      const subscriptionId = document.getElementById("subscriptionId").value.trim();
+      if (!subscriptionId) {
+        alert("Please enter a subscription ID");
         return;
       }
 
-      const templateUri =
-        'https://raw.githubusercontent.com/RdLoreto/azure-delegation/main/delegation.json';
-      const encodedTemplateUri = encodeURIComponent(templateUri);
-      const url = `https://portal.azure.com/#create/Microsoft.Template/uri/${encodedTemplateUri}`;
+      try {
+        // Login popup to get account
+        const loginResponse = await msalInstance.loginPopup({ scopes });
+        const account = loginResponse.account;
+        msalInstance.setActiveAccount(account);
 
-      status.innerHTML = `
-        <strong>Atenção:</strong><br/>
-        Você será redirecionado para o portal Azure para aceitar a delegação.<br/>
-        Depois que concluir, retorne a esta página.<br/>
-        <a href="${url}" target="_blank" rel="noopener noreferrer">Abrir Azure Portal para delegar acesso</a>
-      `;
+        // Acquire token silently or via popup if needed
+        const tokenResponse = await msalInstance.acquireTokenSilent({
+          scopes,
+          account,
+        }).catch(async (error) => {
+          // fallback to popup if silent fails
+          if (error instanceof msal.InteractionRequiredAuthError) {
+            return msalInstance.acquireTokenPopup({ scopes, account });
+          } else {
+            throw error;
+          }
+        });
 
-      window.open(url, '_blank');
+        const accessToken = tokenResponse.accessToken;
+
+        // Call Role Assignments API to check Billing Reader role assignment
+        // Billing Reader role definition ID:
+        const billingReaderRoleDefinitionId = "b24988ac-6180-42a0-ab88-20f7382dd24c";
+
+        // API endpoint to list role assignments for current principal on the subscription
+        const roleAssignmentsUrl = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01&$filter=principalId eq '${account.homeAccountId.split('.')[0]}' or principalName eq '${account.username}'`;
+
+        // Actually, the best way is to check all assignments and filter by roleDefinitionId (Billing Reader)
+
+        const roleAssignmentsResponse = await fetch(
+          `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!roleAssignmentsResponse.ok) {
+          throw new Error(`API call failed: ${roleAssignmentsResponse.status} ${roleAssignmentsResponse.statusText}`);
+        }
+
+        const roleAssignmentsJson = await roleAssignmentsResponse.json();
+
+        // Filter role assignments for billing reader role and for our principalId or userId
+        const hasBillingReader = roleAssignmentsJson.value.some((ra) =>
+          ra.properties.roleDefinitionId.toLowerCase().endsWith(billingReaderRoleDefinitionId) &&
+          (ra.properties.principalId.toLowerCase() === account.homeAccountId.split('.')[0].toLowerCase() || ra.properties.principalName?.toLowerCase() === account.username.toLowerCase())
+        );
+
+        resultDiv.textContent = hasBillingReader
+          ? `You HAVE Billing Reader access on subscription ${subscriptionId}`
+          : `You DO NOT have Billing Reader access on subscription ${subscriptionId}`;
+      } catch (e) {
+        resultDiv.textContent = "Error: " + e.message;
+      }
     };
   </script>
 </body>
