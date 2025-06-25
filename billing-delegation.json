@@ -7,14 +7,14 @@
       "apiVersion": "2022-10-01",
       "name": "[guid('billing-reader-delegation')]",
       "properties": {
-        "registrationDefinitionName": "Billing Reader Access",
+        "registrationDefinitionName": "PocBillingReader",
         "description": "Grants read-only billing access for cost optimization insights",
-        "managedByTenantId": "d9106a5f-485c-4821-b34e-a4b19f02a841",
+        "managedByTenantId": "f988766b-1dc1-4db1-973e-611897dbf32a", // Your Directory (tenant) ID
         "authorizations": [
           {
-            "principalId": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
-            "principalIdDisplayName": "YourSaaS-Billing",
-            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
+            "principalId": "706b128a-346d-47d1-bfd5-bc9513440f6d", // Object ID of your Service Principal
+            "principalIdDisplayName": "PocBillingReader", // Matches your display name
+            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Cost Management Reader
           }
         ],
         "eligibleAuthorizations": []
