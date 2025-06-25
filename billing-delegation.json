@@ -12,7 +12,7 @@
         "managedByTenantId": "f988766b-1dc1-4db1-973e-611897dbf32a", // Your Directory (tenant) ID
         "authorizations": [
           {
-            "principalId": "706b128a-346d-47d1-bfd5-bc9513440f6d", // Object ID of your Service Principal
+            "principalId": "0eb7e6b8-07ec-4625-8b38-3897efe13f9c", // Object ID of your Service Principal
             "principalIdDisplayName": "PocBillingReader", // Matches your display name
             "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Cost Management Reader
           }
