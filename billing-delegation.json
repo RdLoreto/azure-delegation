@@ -6,6 +6,7 @@
       "type": "Microsoft.ManagedServices/registrationDefinitions",
       "apiVersion": "2022-10-01",
       "name": "[guid('billing-reader-delegation')]",
+      "scope": "/",  // <-- THIS FORCES SUBSCRIPTION-LEVEL DEPLOYMENT
       "properties": {
         "registrationDefinitionName": "Billing Reader Access",
         "description": "Grants read-only billing access for cost optimization insights",
@@ -17,7 +18,7 @@
             "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Billing Reader
           }
         ],
-        "eligibleAuthorizations": [] // Required for 2022-10-01 API
+        "eligibleAuthorizations": []
       }
     }
   ]
