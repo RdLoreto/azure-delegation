@@ -9,10 +9,10 @@
       "properties": {
         "registrationDefinitionName": "PocBillingReader",
         "description": "Grants read-only billing access for cost optimization insights",
-        "managedByTenantId": "d9106a5f-485c-4821-b34e-a4b19f02a841", // Your Directory (tenant) ID
+        "managedByTenantId": "162f10fa-672a-44d4-ae88-bf670a830df4", // Your Directory (tenant) ID
         "authorizations": [
           {
-            "principalId": "0eb7e6b8-07ec-4625-8b38-3897efe13f9c", // Object ID of your Service Principal
+            "principalId": "cbf50ce3-299c-4dec-ae5e-39f9c5b96995", // Object ID of your Service Principal
             "principalIdDisplayName": "PocBillingReader", // Matches your display name
             "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Cost Management Reader
           }
