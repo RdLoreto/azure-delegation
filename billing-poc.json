@@ -8,16 +8,16 @@
       "name": "[guid('billing-reader-delegation')]",
       "properties": {
         "registrationDefinitionName": "Billing Reader Access",
-        "description": "Grants read-only billing access",
-        "managedByTenantId": "d9106a5f-485c-4821-b34e-a4b19f02a841",
+        "description": "Grants read-only billing access for cost optimization insights",
+        "managedByTenantId": "d9106a5f-485c-4821-b34e-a4b19f02a841", // YOUR TENANT ID
         "authorizations": [
           {
-            "principalId": "7f8640be-2c3d-4826-b99a-5ac880b11d77",
-            "principalIdDisplayName": "PocBillingReader",
-            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
+            "principalId": "7f8640be-2c3d-4826-b99a-5ac880b11d77", // YOUR SPN OBJECT ID
+            "principalIdDisplayName": "YourSaaS-Billing",
+            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Billing Reader
           }
         ],
-        "eligibleAuthorizations": []
+        "eligibleAuthorizations": [] // Required for 2022-10-01 API
       }
     }
   ]
