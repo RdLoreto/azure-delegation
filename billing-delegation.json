@@ -9,16 +9,27 @@
       "properties": {
         "registrationDefinitionName": "PocBillingReader",
         "description": "Grants read-only billing access for cost optimization insights",
-        "managedByTenantId": "162f10fa-672a-44d4-ae88-bf670a830df4", // Your Directory (tenant) ID
+        "managedByTenantId": "162f10fa-672a-44d4-ae88-bf670a830df4",
         "authorizations": [
           {
-            "principalId": "cbf50ce3-299c-4dec-ae5e-39f9c5b96995", // Object ID of your Service Principal
-            "principalIdDisplayName": "PocBillingReader", // Matches your display name
-            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64" // Cost Management Reader
+            "principalId": "cbf50ce3-299c-4dec-ae5e-39f9c5b96995",
+            "principalIdDisplayName": "PocBillingReader",
+            "roleDefinitionId": "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"
           }
         ],
         "eligibleAuthorizations": []
       }
+    },
+    {
+      "type": "Microsoft.ManagedServices/registrationAssignments",
+      "apiVersion": "2022-10-01",
+      "name": "[guid('billing-reader-delegation-assignment')]",
+      "properties": {
+        "registrationDefinitionId": "[subscriptionResourceId('Microsoft.ManagedServices/registrationDefinitions', guid('billing-reader-delegation'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedServices/registrationDefinitions', guid('billing-reader-delegation'))]"
+      ]
     }
   ]
 }
