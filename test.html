@@ -7,7 +7,7 @@
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Validar Permissão via Azure Lighthouse</h1>
+  <h1>Validar Permissão via Azure Lighthouse?</h1>
   <button id="loginBtn" onclick="signIn()">Entrar com Azure</button>
 
   <div id="subscriptionSelector" style="margin-top:20px; display:none;">
@@ -19,9 +19,9 @@
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    const tenantId = "d9106a5f-485c-4821-b34e-a4b19f02a841"; // Seu tenant ID
-    const clientId = "be316639-ba4e-4d14-b856-44010cfd84e4"; // Seu Application (client) ID
-    const appPrincipalObjectId = "cbf50ce3-299c-4dec-ae5e-39f9c5b96995"; // Object ID do Service Principal do app
+    const tenantId = "162f10fa-672a-44d4-ae88-bf670a830df4"; // Seu tenant ID atualizado
+    const clientId = "66c3b8c5-7a14-4728-9b58-45da8e781beb"; // Seu Application (client) ID atualizado
+    const appPrincipalObjectId = "07f38eda-4009-45ec-ac53-047cb28ffdfe"; // Object ID atualizado do Service Principal do app
 
     let msalInstance;
     let account;
@@ -129,7 +129,7 @@
   <!--
   PARA EVITAR O ERRO "ADMIN APPROVAL REQUIRED":
   1. Copie e cole no navegador o link abaixo (substitua tenantId e clientId):
-  https://login.microsoftonline.com/d9106a5f-485c-4821-b34e-a4b19f02a841/adminconsent?client_id=be316639-ba4e-4d14-b856-44010cfd84e4
+  https://login.microsoftonline.com/162f10fa-672a-44d4-ae88-bf670a830df4/adminconsent?client_id=66c3b8c5-7a14-4728-9b58-45da8e781beb
 
   2. Faça login como Global Admin e aceite as permissões para o aplicativo.
   3. Depois disso, o login via popup no app funcionará sem pedir aprovação.
