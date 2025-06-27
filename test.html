@@ -113,7 +113,8 @@
         const assignments = data.value;
 
         const found = assignments.find(assignment => {
-          const authorizations = assignment.properties.authorizations || [];
+          const authorizations = assignment.properties.authorizations;
+          if (!Array.isArray(authorizations)) return false;
           return authorizations.some(auth => auth.principalId.toLowerCase() === appPrincipalObjectId.toLowerCase());
         });
 
@@ -129,10 +130,10 @@
   <!--
   PARA EVITAR O ERRO "ADMIN APPROVAL REQUIRED":
   1. Copie e cole no navegador o link abaixo (substitua tenantId e clientId):
-  https://login.microsoftonline.com/162f10fa-672a-44d4-ae88-bf670a830df4/adminconsent?client_id=66c3b8c5-7a14-4728-9b58-45da8e781beb
-
+     https://login.microsoftonline.com/162f10fa-672a-44d4-ae88-bf670a830df4/adminconsent?client_id=66c3b8c5-7a14-4728-9b58-45da8e781beb
   2. Faça login como Global Admin e aceite as permissões para o aplicativo.
   3. Depois disso, o login via popup no app funcionará sem pedir aprovação.
   -->
+
 </body>
 </html>
