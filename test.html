@@ -7,7 +7,7 @@
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Validar Permissão via Azure Lighthouse</h1>
+  <h1>Validar Permissão via Azure Lighthouse!</h1>
   <button id="loginBtn" onclick="signIn()">Entrar com Azure</button>
 
   <div id="subscriptionSelector" style="margin-top:20px; display:none;">
@@ -26,7 +26,7 @@
     const msalConfig = {
       auth: {
         clientId: clientId,
-       authority: "https://login.microsoftonline.com/common"
+        authority: "https://login.microsoftonline.com/common",
         redirectUri: "https://rdloreto.github.io/azure-delegation/test.html"
       }
     };
