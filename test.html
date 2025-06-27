@@ -3,77 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Validar Billing Reader</title>
+  <title>Validar Delegação Azure Lighthouse</title>
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Validar Permissão Billing Reader</h1>
-  <button onclick="signIn()">Entrar com Azure</button>
+  <h1>Validar Permissão via Azure Lighthouse</h1>
+  <button id="loginBtn" onclick="signIn()">Entrar com Azure</button>
+
+  <div id="subscriptionSelector" style="margin-top:20px; display:none;">
+    <label for="subscriptions">Selecione a subscription:</label>
+    <select id="subscriptions"></select>
+    <button onclick="validateDelegation()">Validar Delegação</button>
+  </div>
+
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
     const tenantId = "d9106a5f-485c-4821-b34e-a4b19f02a841"; // Seu tenant ID
+    const clientId = "be316639-ba4e-4d14-b856-44010cfd84e4"; // Seu Application (client) ID
+    const appPrincipalObjectId = "cbf50ce3-299c-4dec-ae5e-39f9c5b96995"; // Object ID do Service Principal do app
+
+    let msalInstance;
+    let account;
+    let accessToken;
+    
     const msalConfig = {
       auth: {
-        clientId: "66c3b8c5-7a14-4728-9b58-45da8e781beb", // Seu Application (client) ID
+        clientId: clientId,
         authority: `https://login.microsoftonline.com/${tenantId}`,
-        redirectUri: "https://rdloreto.github.io/azure-delegation/test.html"
+        redirectUri: location.href
       }
     };
 
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
+    msalInstance = new msal.PublicClientApplication(msalConfig);
 
     async function signIn() {
       try {
-        // Solicita permissão user_impersonation para Azure Management API
         const loginResponse = await msalInstance.loginPopup({
           scopes: ["https://management.azure.com/user_impersonation"]
         });
+        account = loginResponse.account;
 
         const tokenResponse = await msalInstance.acquireTokenSilent({
-          account: loginResponse.account,
+          account: account,
           scopes: ["https://management.azure.com/user_impersonation"]
         });
 
-        const token = tokenResponse.accessToken;
-        await getRoleAssignments(token);
+        accessToken = tokenResponse.accessToken;
+
+        document.getElementById("loginBtn").style.display = "none";
+        await loadSubscriptions();
       } catch (err) {
         document.getElementById("result").innerText = "Erro de login: " + err;
       }
     }
 
-    async function getRoleAssignments(token) {
-      const subscriptionId = "31da03d0-8117-44bd-950e-f256cddc419b"; // ID da subscription
-      const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"; // Billing Reader RoleDefinitionId
-
-      // Object ID do Service Principal da aplicação
-      const appPrincipalObjectId = "cbf50ce3-299c-4dec-ae5e-39f9c5b96995";
-
-      const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01`;
-
+    async function loadSubscriptions() {
+      const url = `https://management.azure.com/subscriptions?api-version=2020-01-01`;
       const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        document.getElementById("result").innerHTML = `<p style="color:red;">Erro ao buscar roles: ${response.status} - ${errorText}</p>`;
+        document.getElementById("result").innerHTML = `<p style="color:red;">Erro ao buscar subscriptions: ${response.status} - ${errorText}</p>`;
         return;
       }
 
       const data = await response.json();
-      const assignments = data.value;
+      const subscriptions = data.value;
 
-      const found = assignments.find(a =>
-        a.properties.principalId.toLowerCase() === appPrincipalObjectId.toLowerCase() &&
-        a.properties.roleDefinitionId.toLowerCase().includes(billingReaderRoleId.toLowerCase())
-      );
+      if (subscriptions.length === 0) {
+        document.getElementById("result").innerHTML = "<p>Nenhuma subscription encontrada.</p>";
+        return;
+      }
 
-      document.getElementById("result").innerHTML = found
-        ? `<p style="color:green;">✅ A aplicação <b>PocBillingReader</b> tem acesso Billing Reader na subscription.</p>`
-        : `<p style="color:red;">❌ A aplicação NÃO possui Billing Reader nesta subscription.</p>`;
+      const select = document.getElementById("subscriptions");
+      select.innerHTML = "";
+      subscriptions.forEach(sub => {
+        const option = document.createElement("option");
+        option.value = sub.subscriptionId;
+        option.textContent = `${sub.displayName} (${sub.subscriptionId})`;
+        select.appendChild(option);
+      });
+
+      document.getElementById("subscriptionSelector").style.display = "block";
+    }
+
+    async function validateDelegation() {
+      const subscriptionId = document.getElementById("subscriptions").value;
+      document.getElementById("result").innerHTML = "Validando delegação...";
+
+      const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.ManagedServices/registrationAssignments?api-version=2022-10-01`;
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          document.getElementById("result").innerHTML = `<p style="color:red;">Erro ao buscar delegações: ${response.status} - ${errorText}</p>`;
+          return;
+        }
+
+        const data = await response.json();
+        const assignments = data.value;
+
+        const found = assignments.find(assignment => {
+          const authorizations = assignment.properties.authorizations || [];
+          return authorizations.some(auth => auth.principalId.toLowerCase() === appPrincipalObjectId.toLowerCase());
+        });
+
+        document.getElementById("result").innerHTML = found
+          ? `<p style="color:green;">✅ A aplicação <b>PocBillingReader</b> possui delegação via Azure Lighthouse nesta subscription.</p>`
+          : `<p style="color:red;">❌ A aplicação NÃO possui delegação via Azure Lighthouse nesta subscription.</p>`;
+      } catch (err) {
+        document.getElementById("result").innerHTML = `<p style="color:red;">Erro na validação: ${err}</p>`;
+      }
     }
   </script>
 
