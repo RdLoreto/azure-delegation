@@ -7,7 +7,7 @@
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Validar Permissão Billing Reader com o id correto</h1>
+  <h1>Validar Permissão Billing Reader</h1>
   <button onclick="signIn()">Entrar com Azure</button>
   <div id="result" style="margin-top: 20px;"></div>
 
@@ -17,7 +17,7 @@
       auth: {
         clientId: "66c3b8c5-7a14-4728-9b58-45da8e781beb", // Seu Application (client) ID
         authority: `https://login.microsoftonline.com/${tenantId}`,
-        redirectUri: location.href
+        redirectUri: "https://rdloreto.github.io/azure-delegation/test.html"
       }
     };
 
