@@ -7,7 +7,7 @@
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Validar Permissão via Azure Lighthouse?</h1>
+  <h1>Validar Permissão via Azure Lighthouse</h1>
   <button id="loginBtn" onclick="signIn()">Entrar com Azure</button>
 
   <div id="subscriptionSelector" style="margin-top:20px; display:none;">
@@ -19,29 +19,29 @@
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    const tenantId = "162f10fa-672a-44d4-ae88-bf670a830df4"; // Seu tenant ID atualizado
-    const clientId = "66c3b8c5-7a14-4728-9b58-45da8e781beb"; // Seu Application (client) ID atualizado
-    const appPrincipalObjectId = "07f38eda-4009-45ec-ac53-047cb28ffdfe"; // Object ID atualizado do Service Principal do app
+    const tenantId = "162f10fa-672a-44d4-ae88-bf670a830df4"; // Tenant correto
+    const clientId = "66c3b8c5-7a14-4728-9b58-45da8e781beb"; // Client ID da app
+    const appPrincipalObjectId = "07f38eda-4009-45ec-ac53-047cb28ffdfe"; // Object ID do Service Principal
 
-    let msalInstance;
-    let account;
-    let accessToken;
-    
     const msalConfig = {
       auth: {
         clientId: clientId,
         authority: `https://login.microsoftonline.com/${tenantId}`,
-        redirectUri: location.href
+        redirectUri: "https://rdloreto.github.io/azure-delegation/test.html"
       }
     };
 
-    msalInstance = new msal.PublicClientApplication(msalConfig);
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    let account = null;
+    let accessToken = null;
 
     async function signIn() {
       try {
         const loginResponse = await msalInstance.loginPopup({
           scopes: ["https://management.azure.com/user_impersonation"]
         });
+
         account = loginResponse.account;
 
         const tokenResponse = await msalInstance.acquireTokenSilent({
@@ -52,6 +52,7 @@
         accessToken = tokenResponse.accessToken;
 
         document.getElementById("loginBtn").style.display = "none";
+
         await loadSubscriptions();
       } catch (err) {
         document.getElementById("result").innerText = "Erro de login: " + err;
@@ -113,8 +114,7 @@
         const assignments = data.value;
 
         const found = assignments.find(assignment => {
-          const authorizations = assignment.properties.authorizations;
-          if (!Array.isArray(authorizations)) return false;
+          const authorizations = assignment.properties.authorizations || [];
           return authorizations.some(auth => auth.principalId.toLowerCase() === appPrincipalObjectId.toLowerCase());
         });
 
@@ -130,10 +130,10 @@
   <!--
   PARA EVITAR O ERRO "ADMIN APPROVAL REQUIRED":
   1. Copie e cole no navegador o link abaixo (substitua tenantId e clientId):
-     https://login.microsoftonline.com/162f10fa-672a-44d4-ae88-bf670a830df4/adminconsent?client_id=66c3b8c5-7a14-4728-9b58-45da8e781beb
+  https://login.microsoftonline.com/162f10fa-672a-44d4-ae88-bf670a830df4/adminconsent?client_id=66c3b8c5-7a14-4728-9b58-45da8e781beb
+
   2. Faça login como Global Admin e aceite as permissões para o aplicativo.
   3. Depois disso, o login via popup no app funcionará sem pedir aprovação.
   -->
-
 </body>
 </html>
