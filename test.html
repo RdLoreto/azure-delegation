@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Validar Billing Reader</title>
+  <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
+</head>
+<body>
+  <h1>Validar Permissão Billing Reader</h1>
+  <button onclick="signIn()">Entrar com Azure</button>
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    const msalConfig = {
+      auth: {
+        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // seu App ID
+        authority: "https://login.microsoftonline.com/common",
+        redirectUri: location.href
+      }
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    async function signIn() {
+      try {
+        const loginResponse = await msalInstance.loginPopup({
+          scopes: ["https://management.azure.com/user_impersonation"]
+        });
+
+        const tokenResponse = await msalInstance.acquireTokenSilent({
+          account: loginResponse.account,
+          scopes: ["https://management.azure.com/user_impersonation"]
+        });
+
+        const token = tokenResponse.accessToken;
+        getRoleAssignments(token);
+      } catch (err) {
+        document.getElementById("result").innerText = "Erro de login: " + err;
+      }
+    }
+
+    async function getRoleAssignments(token) {
+      const subscriptionId = "31da03d0-8117-44bd-950e-f256cddc419b"; // ID do cliente
+      const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64";
+      const appObjectId = "cbf50ce3-299c-4dec-ae5e-39f9c5b96995"; // seu Service Principal
+
+      const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01`;
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      const assignments = data.value;
+
+      const found = assignments.find(a =>
+        a.properties.principalId === appObjectId &&
+        a.properties.roleDefinitionId.includes(billingReaderRoleId)
+      );
+
+      document.getElementById("result").innerHTML = found
+        ? `<p style="color:green;">✅ A aplicação <b>PocBillingReader</b> tem acesso Billing Reader na subscription.</p>`
+        : `<p style="color:red;">❌ A aplicação NÃO possui Billing Reader nesta subscription.</p>`;
+    }
+  </script>
+</body>
+</html>
