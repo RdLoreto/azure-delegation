@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Validar Billing Reader 2</title>
+  <title>Validar Billing Reader</title>
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
-  <h1>Validar Permissão Billing Reader</h1>
+  <h1>Validar Permissão Billing Reader com o id correto</h1>
   <button onclick="signIn()">Entrar com Azure</button>
   <div id="result" style="margin-top: 20px;"></div>
 
@@ -15,7 +15,7 @@
     const tenantId = "d9106a5f-485c-4821-b34e-a4b19f02a841"; // Seu tenant ID
     const msalConfig = {
       auth: {
-        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // Seu Application (client) ID
+        clientId: "66c3b8c5-7a14-4728-9b58-45da8e781beb", // Seu Application (client) ID
         authority: `https://login.microsoftonline.com/${tenantId}`,
         redirectUri: location.href
       }
