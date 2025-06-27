@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Validar Billing Reader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Validar Billing Reader 2</title>
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
@@ -12,10 +12,11 @@
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
+    const tenantId = "d9106a5f-485c-4821-b34e-a4b19f02a841"; // Seu tenant ID
     const msalConfig = {
       auth: {
-        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // seu App ID
-        authority: "https://login.microsoftonline.com/common",
+        clientId: "be316639-ba4e-4d14-b856-44010cfd84e4", // Seu Application (client) ID
+        authority: `https://login.microsoftonline.com/${tenantId}`,
         redirectUri: location.href
       }
     };
@@ -24,6 +25,7 @@
 
     async function signIn() {
       try {
+        // Solicita permissão user_impersonation para Azure Management API
         const loginResponse = await msalInstance.loginPopup({
           scopes: ["https://management.azure.com/user_impersonation"]
         });
@@ -34,16 +36,18 @@
         });
 
         const token = tokenResponse.accessToken;
-        getRoleAssignments(token);
+        await getRoleAssignments(token);
       } catch (err) {
         document.getElementById("result").innerText = "Erro de login: " + err;
       }
     }
 
     async function getRoleAssignments(token) {
-      const subscriptionId = "31da03d0-8117-44bd-950e-f256cddc419b"; // ID do cliente
-      const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64";
-      const appObjectId = "cbf50ce3-299c-4dec-ae5e-39f9c5b96995"; // seu Service Principal
+      const subscriptionId = "31da03d0-8117-44bd-950e-f256cddc419b"; // ID da subscription
+      const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"; // Billing Reader RoleDefinitionId
+
+      // Object ID do Service Principal da aplicação
+      const appPrincipalObjectId = "cbf50ce3-299c-4dec-ae5e-39f9c5b96995";
 
       const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01`;
 
@@ -53,12 +57,18 @@
         }
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        document.getElementById("result").innerHTML = `<p style="color:red;">Erro ao buscar roles: ${response.status} - ${errorText}</p>`;
+        return;
+      }
+
       const data = await response.json();
       const assignments = data.value;
 
       const found = assignments.find(a =>
-        a.properties.principalId === appObjectId &&
-        a.properties.roleDefinitionId.includes(billingReaderRoleId)
+        a.properties.principalId.toLowerCase() === appPrincipalObjectId.toLowerCase() &&
+        a.properties.roleDefinitionId.toLowerCase().includes(billingReaderRoleId.toLowerCase())
       );
 
       document.getElementById("result").innerHTML = found
@@ -66,5 +76,14 @@
         : `<p style="color:red;">❌ A aplicação NÃO possui Billing Reader nesta subscription.</p>`;
     }
   </script>
+
+  <!--
+  PARA EVITAR O ERRO "ADMIN APPROVAL REQUIRED":
+  1. Copie e cole no navegador o link abaixo (substitua tenantId e clientId):
+  https://login.microsoftonline.com/d9106a5f-485c-4821-b34e-a4b19f02a841/adminconsent?client_id=be316639-ba4e-4d14-b856-44010cfd84e4
+
+  2. Faça login como Global Admin e aceite as permissões para o aplicativo.
+  3. Depois disso, o login via popup no app funcionará sem pedir aprovação.
+  -->
 </body>
 </html>
