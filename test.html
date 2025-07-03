@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Validar Billing Reader e Delegação Azure Lighthouse</title>
+  <title>Validar Billing Reader e Delegação Azure Lighthouse Test</title>
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
 </head>
 <body>
@@ -19,10 +19,9 @@
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    const tenantId = "d9106a5f-485c-4821-b34e-a4b19f02a841"; // Tenant correto
-    const clientId = "5240a9c4-99af-4788-b332-6623a98aa73d"; // Client ID correto
-    const appPrincipalObjectId = "07f38eda-4009-45ec-ac53-047cb28ffdfe"; // Object ID correto do SP
-    const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"; // RoleDefinitionId Billing Reader
+    const clientId = "5240a9c4-99af-4788-b332-6623a98aa73d"; // Client ID da app
+    const appPrincipalObjectId = "07f38eda-4009-45ec-ac53-047cb28ffdfe"; // Object ID do SP
+    const billingReaderRoleId = "fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64"; // Billing Reader role ID
 
     let msalInstance;
     let account;
@@ -31,7 +30,7 @@
     const msalConfig = {
       auth: {
         clientId: clientId,
-        authority: `https://login.microsoftonline.com/${tenantId}`,
+        authority: "https://login.microsoftonline.com/organizations", // MULTITENANT!
         redirectUri: location.href
       }
     };
@@ -153,11 +152,10 @@
 
   <!--
   PARA EVITAR O ERRO "ADMIN APPROVAL REQUIRED":
-  1. Copie e cole no navegador o link abaixo (substitua tenantId e clientId):
-  https://login.microsoftonline.com/d9106a5f-485c-4821-b34e-a4b19f02a841/adminconsent?client_id=66c3b8c5-7a14-4728-9b58-45da8e781beb
+  1. Copie e cole no navegador o link abaixo:
+  https://login.microsoftonline.com/organizations/adminconsent?client_id=5240a9c4-99af-4788-b332-6623a98aa73d
 
   2. Faça login como Global Admin e aceite as permissões para o aplicativo.
-  3. Depois disso, o login via popup no app funcionará sem pedir aprovação.
   -->
 </body>
 </html>
