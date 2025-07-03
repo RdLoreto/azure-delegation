@@ -8,7 +8,12 @@
 </head>
 <body>
   <h1>Validar Billing Reader e Delegação Azure Lighthouse</h1>
-  <button id="loginBtn" onclick="signIn()">Entrar com Azure</button>
+
+  <label for="tenantInput">Insira o Tenant ID do cliente:</label><br />
+  <input type="text" id="tenantInput" placeholder="Ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="width: 400px;" oninput="checkTenantInput()" />
+  <br /><br />
+
+  <button id="loginBtn" onclick="signIn()" style="display:none;">Entrar com Azure</button>
 
   <div id="subscriptionSelector" style="margin-top:20px; display:none;">
     <label for="subscriptions">Selecione a subscription:</label>
@@ -26,19 +31,32 @@
     let msalInstance;
     let account;
     let accessToken;
+    let tenantId;
 
-    const msalConfig = {
-      auth: {
-        clientId: clientId,
-        authority: "https://login.microsoftonline.com/organizations", // MULTITENANT!
-        redirectUri: location.href
+    function checkTenantInput() {
+      const tenantInput = document.getElementById("tenantInput").value.trim();
+      const loginBtn = document.getElementById("loginBtn");
+
+      if (tenantInput.length === 36) { // UUID format
+        tenantId = tenantInput;
+        loginBtn.style.display = "inline-block";
+      } else {
+        loginBtn.style.display = "none";
       }
-    };
-
-    msalInstance = new msal.PublicClientApplication(msalConfig);
+    }
 
     async function signIn() {
       try {
+        const msalConfig = {
+          auth: {
+            clientId: clientId,
+            authority: `https://login.microsoftonline.com/${tenantId}`,
+            redirectUri: location.href
+          }
+        };
+
+        msalInstance = new msal.PublicClientApplication(msalConfig);
+
         const loginResponse = await msalInstance.loginPopup({
           scopes: ["https://management.azure.com/user_impersonation"]
         });
@@ -52,6 +70,7 @@
         accessToken = tokenResponse.accessToken;
 
         document.getElementById("loginBtn").style.display = "none";
+        document.getElementById("tenantInput").disabled = true;
         await loadSubscriptions();
       } catch (err) {
         document.getElementById("result").innerText = "Erro de login: " + err;
@@ -96,7 +115,6 @@
       document.getElementById("result").innerHTML = "Validando permissões...";
 
       try {
-        // Verifica Role Assignments para Billing Reader
         const rolesUrl = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01`;
         const rolesResponse = await fetch(rolesUrl, {
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -114,7 +132,6 @@
           a.properties.roleDefinitionId.toLowerCase().includes(billingReaderRoleId.toLowerCase())
         );
 
-        // Verifica Azure Lighthouse Delegation (registrationAssignments)
         const lighthouseUrl = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.ManagedServices/registrationAssignments?api-version=2022-10-01`;
         const lighthouseResponse = await fetch(lighthouseUrl, {
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -132,7 +149,6 @@
           return authorizations.some(auth => auth.principalId.toLowerCase() === appPrincipalObjectId.toLowerCase());
         });
 
-        // Resultado final
         let resultHtml = "";
         resultHtml += hasBillingReader
           ? `<p style="color:green;">✅ A aplicação <b>PocBillingReader</b> tem acesso Billing Reader na subscription.</p>`
@@ -149,13 +165,5 @@
       }
     }
   </script>
-
-  <!--
-  PARA EVITAR O ERRO "ADMIN APPROVAL REQUIRED":
-  1. Copie e cole no navegador o link abaixo:
-  https://login.microsoftonline.com/organizations/adminconsent?client_id=5240a9c4-99af-4788-b332-6623a98aa73d
-
-  2. Faça login como Global Admin e aceite as permissões para o aplicativo.
-  -->
 </body>
 </html>
